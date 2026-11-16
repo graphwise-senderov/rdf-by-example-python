@@ -184,4 +184,4 @@ The DSL makes the Python mapping the source of truth, and the Turtle template be
 
 ## Licence
 
-No licence file is included. The licence is to be chosen by the author before the package is published.
+This package is released under the MIT License; see [LICENSE](LICENSE).
