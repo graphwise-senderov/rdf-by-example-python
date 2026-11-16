@@ -1,0 +1,23 @@
+[build-system]
+requires = ["setuptools>=64"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "rdf-by-example-py"
+version = "0.1.0"
+description = "RDF by Example in Python: a small DSL for mapping table rows to RDF quads"
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = ["rdflib>=7.0"]
+
+[project.optional-dependencies]
+test = ["pytest>=8"]
+
+[tool.setuptools]
+py-modules = ["rdfdsl", "macros", "compare"]
+packages = ["example"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["."]
+filterwarnings = ["ignore::DeprecationWarning:rdflib.*"]

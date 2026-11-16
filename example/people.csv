@@ -1,0 +1,7 @@
+id,given_name,family_name,organisation,roles,email
+p1,Anna,Meier,acme,CEO; Board Member,anna.meier@acme.example.org
+p2,Jürgen,Müller,gruen,Site Manager,
+p3,Zoë,Dubois,lumen,Founder; Researcher,zoe@lumen.example.org
+p4,Łukasz,Nowak,open-grid,Volunteer,
+p5,Sofia,,wasser,Engineer,sofia@wasser.example.org
+p6,Ravi,Patel,acme,Engineer; Data Steward,ravi.patel@acme.example.org

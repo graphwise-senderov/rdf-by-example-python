@@ -1,0 +1,6 @@
+id,name,type,sectors,country,homepage,employees,founded
+acme,Acme Energy AG,schema:Corporation,"Energy, Grid Operation",CH,https://acme.example.org,1200,1998-04-01
+gruen,Grün & Söhne GmbH,schema:Corporation,Construction,DE,,85,1952-09-15
+wasser,Wasserwerk Zürich-Nord,schema:GovernmentOrganization,"Water, Public Sector",CH,https://wasser.example.org,310,
+open-grid,Open Grid Initiative,schema:NGO,"Energy, Research, Open Data",n/a,https://open grid.example.org,12,2019-01-10
+lumen,Lumen Labs,,Research,FR,https://lumen.example.org,,2021-06-30

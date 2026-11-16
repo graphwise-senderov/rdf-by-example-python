@@ -1,0 +1,33 @@
+# RDF by Example template for the two tables, for comparison with mapping.py.
+# It is not executed. (column) inserts a cell, MACRO(column) applies a macro.
+# The file is valid TriG: parentheses and commas are legal inside IRIs.
+@base <https://example.org/> .
+@prefix ex:     <https://example.org/> .
+@prefix schema: <https://schema.org/> .
+@prefix xsd:    <http://www.w3.org/2001/XMLSchema#> .
+
+# organisations.csv
+graph <graph/organisations> {
+  <org/(id)> a <CURIE(type)>;
+    schema:name                "(name)";
+    schema:alternateName       "URLIFY(name)";
+    ex:sector                  <sector/URLIFY(SPLIT(sectors))>;
+    schema:addressCountry      <country/IFNOT_EMPTY(country)>;
+    schema:url                 <(homepage)>;
+    schema:numberOfEmployees   "(employees)"^^xsd:integer;
+    schema:foundingDate        "(founded)"^^xsd:date.
+
+  <sector/URLIFY(SPLIT(sectors))> a ex:Sector;
+    schema:name                "SPLIT(sectors)"@en.
+}
+
+# people.csv
+graph <graph/people> {
+  <person/(id)> a schema:Person;
+    schema:givenName           "(given_name)";
+    schema:familyName          "(family_name)";
+    ex:handle                  "URLIFY(given_name)DASH_IF(URLIFY(family_name))";
+    schema:worksFor            <org/(organisation)>;
+    schema:roleName            "SPLIT_SEMI(roles)"@en;
+    schema:email               "(email)".
+}
