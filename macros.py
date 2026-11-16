@@ -10,7 +10,7 @@ from typing import Any, Optional
 from rdflib import URIRef
 from rdflib.namespace import RDF, RDFS, XSD
 
-from rdfdsl import cell, valid_iri
+from rdfdsl import Split, cell, split, valid_iri
 
 TRANSLITERATION = str.maketrans({"ä": "ae", "ö": "oe", "ü": "ue", "Ä": "Ae", "Ö": "Oe", "Ü": "Ue", "ß": "ss"})
 EMPTY_MARKERS = frozenset({"", "-", "n/a", "N/A", "none", "None"})
@@ -45,10 +45,10 @@ def urlify(text: str) -> str:
     return "".join(c for c in transliterate(text) if c.isalnum())
 
 
-def _split(text: Optional[str], pattern: str) -> Optional[list[str]]:
+def _split(text: Optional[str], pattern: str) -> Optional[Split]:
     if text is None:
         return None
-    return [part.strip() for part in re.split(pattern, text) if part.strip()]
+    return split(part.strip() for part in re.split(pattern, text) if part.strip())
 
 
 def split_comma(text: Optional[str]) -> Optional[list[str]]:
@@ -98,6 +98,8 @@ def dash_if(text: Any) -> Any:
     >>> "Jane" + dash_if("Doe"), "Jane" + dash_if(None), dash_if(["a", None])
     ('Jane-Doe', 'Jane', ['-a', ''])
     """
+    if isinstance(text, Split):
+        return text.derive(dash_if(t) for t in text)
     if isinstance(text, list):
         return [dash_if(t) for t in text]
     return "" if text is None else "-" + text

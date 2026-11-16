@@ -73,3 +73,20 @@ def test_template_is_valid_trig() -> None:
     iris = {str(s) for s, _, _, _ in t.quads()}
     assert "https://example.org/org/(id)" in iris
     assert "https://example.org/sector/URLIFY(SPLIT(sectors))" in iris
+
+
+def test_split_values_stay_paired(ds: Dataset) -> None:
+    for name in ("Energy", "Research", "OpenData"):
+        assert len(objects(ds, EX["sector", name], SCHEMA.name)) == 1
+
+
+def test_different_splits_combine() -> None:
+    from rdfdsl import Prefix, split, subject
+
+    ex = Prefix("urn:x:")
+    a, b = split(["1", "2"]), split(["x", "y", "z"])
+    paired = subject(ex["s", a]) >> ex.p << a << ex["t", a]
+    crossed = subject(ex["s", a]) >> ex.p << b
+    assert len(paired.triples) == 4
+    assert len(crossed.triples) == 6
+    assert len((subject(ex["s", a]) >> ex.p << [ex.u, ex.v]).triples) == 4

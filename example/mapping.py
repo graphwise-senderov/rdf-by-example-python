@@ -3,7 +3,7 @@
 from rdflib import RDF
 
 from macros import curie, dash_if, if_not_empty, split_comma, split_semi, urlify
-from rdfdsl import Prefix, Quad, Row, date, en, graph, integer, iri, quads, subject
+from rdfdsl import Prefix, Quad, Row, date, en, graph, integer, iri, subject
 
 EX = Prefix("https://example.org/")
 SCHEMA = Prefix("https://schema.org/")
@@ -15,10 +15,12 @@ PREFIXES = {"ex": EX.base, "schema": SCHEMA.base, "xsd": "http://www.w3.org/2001
 
 
 def organisation(r: Row) -> tuple[Quad, ...]:
-    """An organisation, and one ``ex:Sector`` per value of the multi-valued ``sectors`` cell."""
-    sectors = split_comma(r.sectors) or []
-    return quads(
-        graph(ORGANISATIONS,
+    """An organisation, and one ``ex:Sector`` per value of the multi-valued ``sectors`` cell.
+
+    ``sectors`` is one split, so ``EX["sector", urlify(sectors)]`` and ``en(sectors)`` stay paired: each sector IRI gets its own name.
+    """
+    sectors = split_comma(r.sectors)
+    return graph(ORGANISATIONS,
             subject(EX["org", r.id])
             >> RDF.type << curie(r.type)
             >> SCHEMA.name << r.name
@@ -27,12 +29,10 @@ def organisation(r: Row) -> tuple[Quad, ...]:
             >> SCHEMA.addressCountry << EX["country", if_not_empty(r.country)]
             >> SCHEMA.url << iri(r.homepage)
             >> SCHEMA.numberOfEmployees << integer(r.employees)
-            >> SCHEMA.foundingDate << date(r.founded)),
-        *(graph(ORGANISATIONS,
-            subject(EX["sector", urlify(name)])
-            >> RDF.type << EX.Sector
-            >> SCHEMA.name << en(name))
-          for name in sectors),
+            >> SCHEMA.foundingDate << date(r.founded),
+        subject(EX["sector", urlify(sectors)])
+        >> RDF.type << EX.Sector
+        >> SCHEMA.name << en(sectors),
     )
 
 

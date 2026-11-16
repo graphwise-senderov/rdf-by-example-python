@@ -57,17 +57,18 @@ The result is a short, readable model and a generated transformation. The cost i
 
 ```python
 def organisation(r: Row) -> tuple[Quad, ...]:
-    sectors = split_comma(r.sectors) or []
-    return quads(
-        graph(ORGANISATIONS,
-            subject(EX["org", r.id])
-            >> RDF.type << curie(r.type)
-            >> SCHEMA.name << r.name
-            >> EX.sector << EX["sector", urlify(sectors)]
-            >> SCHEMA.addressCountry << EX["country", if_not_empty(r.country)]
-            >> SCHEMA.url << iri(r.homepage)
-            >> SCHEMA.numberOfEmployees << integer(r.employees)),
-        ...
+    sectors = split_comma(r.sectors)
+    return graph(ORGANISATIONS,
+        subject(EX["org", r.id])
+        >> RDF.type << curie(r.type)
+        >> SCHEMA.name << r.name
+        >> EX.sector << EX["sector", urlify(sectors)]
+        >> SCHEMA.addressCountry << EX["country", if_not_empty(r.country)]
+        >> SCHEMA.url << iri(r.homepage)
+        >> SCHEMA.numberOfEmployees << integer(r.employees),
+        subject(EX["sector", urlify(sectors)])
+        >> RDF.type << EX.Sector
+        >> SCHEMA.name << en(sectors),
     )
 ```
 
@@ -80,7 +81,7 @@ def organisation(r: Row) -> tuple[Quad, ...]:
 Three rules carry the semantics of the SPARQL templates:
 
 1. `None` vanishes. An empty cell is `None`, and a subject, predicate, object or graph that is `None` emits nothing, as an unbound variable does in a SPARQL CONSTRUCT template. In the example, the empty `homepage` of `gruen` and the empty `email` of person `p2` produce no triple.
-2. Lists fan out. A split cell is a list, and a list in any position emits one triple per element. `split_comma("Energy, Research, Open Data")` gives three `ex:sector` triples for `open-grid`.
+2. Lists fan out. A split cell is a list, and a list in any position emits one triple per element. `split_comma("Energy, Research, Open Data")` gives three `ex:sector` triples for `open-grid`. Values derived from the same split stay paired (see section 4), so the second description gives each sector exactly one name.
 3. An invalid IRI is `None`. `Prefix` and `iri` return `None` for an IRI with a forbidden character such as a space, as SPARQL `iri()` fails on it, so rule 1 applies. The homepage `https://open grid.example.org` produces nothing.
 
 The `@cell` decorator lifts a function on strings to cells: `None` passes through and lists are mapped element by element. All functions in `macros.py` use it, so `urlify(split_comma(...))` works on a list as `URLIFY(SPLIT(...))` did in the template.
@@ -138,7 +139,7 @@ The correspondence is line by line. Output for two rows (from `example/out.trig`
 
 Person `p2` has no `schema:email` (empty cell), and person `p5` has no family name, so the handle has no dash.
 
-One difference needs care. In a template, a split variable used twice in one block stays correlated: `<sector/URLIFY(SPLIT(sectors))> schema:name "SPLIT(sectors)"@en` pairs each sector IRI with its own name. In the DSL, `subject(list) >> p << list` gives the cross product. Where values must stay paired, the mapping loops explicitly, as `organisation` does for the `ex:Sector` descriptions.
+Split values stay paired, as in a template. In `<sector/URLIFY(SPLIT(sectors))> schema:name "SPLIT(sectors)"@en`, each sector IRI gets its own name, and the DSL does the same: `split_comma` returns a `Split`, a list with an identity key, and every value derived from it element by element (through `@cell` functions such as `urlify` and `en`, or through `Prefix`) keeps that key. When a triple combines values, element *i* of a split is only combined with element *i* of the same split, so `subject(EX["sector", urlify(sectors)]) >> SCHEMA.name << en(sectors)` gives one name per sector, not every combination. Values from different splits, or plain lists, still combine in every way, as two separate splits do in SPARQL. This is the better design regardless of templates: reusing a split value means reusing the same element, and a cross product of a list with itself is almost never intended.
 
 ## 5. Macros as Python functions
 
